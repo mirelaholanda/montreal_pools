@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <title>Ajax, JSON and VueJS</title>
+</head>
+<body>
+    <div class="container">
+        <section>
+            <!-- JSON app -->
+            <div class="piscines">
+                <h2 class="bg-dark p-2">Liste des piscines AJAX et JSON</h2>
+                <div id="resultat"></div>
+                <ul id="list">
+
+                </ul>
+                <div class="box">
+                    <button id="btnPiscines" onclick="envoyerRequete()">Récupérer liste des piscines</button>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <!-- VueJS app -->
+            <div id="app">
+                <div class="piscines">
+                    <h2 class="bg-dark p-2">Liste des piscines VueJS</h2>
+                    <div class="box">
+                        <button @click="toutesPiscines()">Afficher toutes les piscines</button>
+                        
+                        <label><input type="radio" @click="filterParcs()">Afficher les piscines dans un parc</label>
+                    </div>
+                    
+                    <div id="resultat">
+                        <ul v-for="p in piscines">
+                            <li>
+                                {{p.properties.NOM + " - " + p.properties.ADRESSE}}
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    
+                </div>
+            </div>
+        </section>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script type="text/javascript" src="js/code.js"></script>
+    <script type="text/javascript">
+        const app = new Vue ({
+            el: "#app",
+            data: {
+                url: "http://donnees.ville.montreal.qc.ca/dataset/4604afb7-a7c4-4626-a3ca-e136158133f2/resource/e202c0f4-d65d-4d5f-893d-dc392d83298d/download/piscines.geojson",
+                piscines: []
+            },
+            methods: {
+                toutesPiscines(){
+                    var request = new XMLHttpRequest();
+                    request.open("Get", this.url);
+                    request.onreadystatechange = function() { 
+                        if (this.readyState == XMLHttpRequest.DONE && this.status == 200) {
+                            var reponse = JSON.parse(this.responseText);
+                            console.log(reponse);
+                            var resultat = reponse.features;
+                            app.piscines = resultat;
+                        }
+                    }
+                    request.send();
+                },
+                filterParcs(){
+                    app.piscines = [];
+                    var request = new XMLHttpRequest();
+                    request.open("Get", this.url);
+                    request.onreadystatechange = function() { 
+                        if (this.readyState == XMLHttpRequest.DONE && this.status == 200) {
+                            var reponse = JSON.parse(this.responseText);
+                            var resultat = reponse.features;
+                            for(var i = 0; i < resultat.length; i++){
+                                if (resultat[i].properties.NOM.includes('Parc')) {
+                                    console.log(reponse);
+                                    app.piscines.push(resultat[i]);
+                                }
+                            }                           
+                        }
+                    }
+                    request.send();                   
+                }
+
+            }
+        });
+    
+    </script>
+</body>
+</html>
